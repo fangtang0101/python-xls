@@ -1,43 +1,19 @@
-
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
-
+from xlutils.copy import copy
 import xlrd
 
-data = xlrd.open_workbook('4月分析表.xls')
-
-tables = data.sheets()
-
-# for tab in tables :
-#     print(tab.name)
 
 
-# 获取第一个表格 A3
-table1 = data.sheet_by_name(u'A3')
-print(table1.name)
+book = xlrd.open_workbook('模版.xls',formatting_info=True)
+sheets=book.sheets()
 
-#获取整行和整列的值（数组）  第几行 的所有数据
-rows = table1.row_values(1)
+sheet_A37 = book.sheet_by_name('37#')
 
-nrows = table1.nrows
-print(nrows)
+rows = sheet_A37.nrows
+cols = sheet_A37.ncols
 
-for row in rows :
-    print(row)
+print('row',rows)
+print('col',rows)
 
-# 单元格
-cell_A1 = table1.cell(3,3).value
-print(cell_A1)
-
-table1.cell(3,3).value = 'haha'
-
-
-ctype = 1 
-value = '测试的值'
-xf = 0 # 扩展的格式化
-table1.put_cell(3, 3, ctype, value, xf)
-print(cell_A1)
-
-
-
-
+for row in range(rows-100):
+	cell = sheet_A37.cell_value(row,3)
+	print('cell value 哈哈:',cell)
