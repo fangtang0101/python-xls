@@ -1,7 +1,7 @@
 
 #-*-coding:utf-8 -*-
 # from xlutils.copy import copy
-#   YP02销售量排名.xls   ==  西餐厅
+#   西餐厅    ./1704/西餐厅.xls
 import xlrd
 import sys
 import chardet
@@ -16,9 +16,17 @@ if sys.getdefaultencoding() != defaultencoding:
 
 
 
-key_sheet_name = '西餐厅'   #模板中对应的表格的名字
-key_path_target = './1704/西餐厅.xls' # 数据源xls 的path
+# key_sheet_name = '西餐厅'   #模板中对应的表格的名字
+# key_path_target = './1704/西餐厅.xls' # 数据源xls 的path
 
+
+key_sheet_name = sys.argv[1]   #模板中对应的表格的名字
+key_path_target = sys.argv[2] # 数据源xls 的path
+
+
+
+print('第二个参数是',key_sheet_name)
+print('第三个参数是',key_path_target)
 
 
 # step 1  解析模板 ================================================
@@ -40,9 +48,11 @@ print('col',rows)
 list_cell = []
 
 for row in range(rows):
-	cell = sheet_A37.cell_value(row,3)
+	cell = sheet_A37.cell_value(row,3)  # 小弄堂   3 要改成2
+	if isinstance(cell,float):
+		print('不对',row,type(cell))
 	if cell.strip() != '': # 需要判断shif
-		cell_target  = {'row': row, 'col': 3, 'name': cell }
+		cell_target  = {'row': row, 'col': 3, 'name': cell }  # 小弄堂   3 要改成2
 		list_cell.append(cell_target)
 		# print(cell.encode('utf-8'))
 
@@ -93,7 +103,7 @@ for item_sou in list_sou:
  		    break
 
 
-print(list_all)
+# print(list_all)
 
 
 
@@ -104,14 +114,15 @@ print(list_all)
 
 rb = xlrd.open_workbook('模版.xls',formatting_info=True)
 wb = copy(rb)
-ws = wb.get_sheet(2)
+ws = wb.get_sheet(key_sheet_name)
+
 print(ws.name)
 
 for item in list_all:
 	ws.write(item['row'], item['col']+2, item['val1'])
 	ws.write(item['row'], item['col']+3, item['val2'])
 
-wb.save('3.xls')
+wb.save('模版.xls')
 
 
 

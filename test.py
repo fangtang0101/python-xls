@@ -19,7 +19,7 @@ if sys.getdefaultencoding() != defaultencoding:
 book = xlrd.open_workbook('模版.xls',formatting_info=True)
 sheets=book.sheets()
 
-sheet_A37 = book.sheet_by_name('韩乡园')
+sheet_A37 = book.sheet_by_name('韩乡园')  #  麦海  两个都要执行
 
 rows = sheet_A37.nrows
 cols = sheet_A37.ncols
@@ -33,9 +33,9 @@ print('col',rows)
 list_cell = []
 
 for row in range(rows):
-	cell = sheet_A37.cell_value(row,3)
+	cell = sheet_A37.cell_value(row,3) # 麦海 为1 韩湘元为 3
 	if cell.strip() != '': # 需要判断shif
-		cell_target  = {'row': row, 'col': 3, 'name': cell }
+		cell_target  = {'row': row, 'col': 3, 'name': cell } # 麦海 为1 韩湘元为 3
 		list_cell.append(cell_target)
 		# print(cell.encode('utf-8'))
 
@@ -103,7 +103,7 @@ for item in list_all:
 	ws.write(item['row'], item['col']+2, item['val1'])
 	ws.write(item['row'], item['col']+3, item['val2'])
 
-wb.save('3.xls')
+wb.save('模版.xls')
 
 
 
