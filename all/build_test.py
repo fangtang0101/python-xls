@@ -9,133 +9,134 @@ from xlutils.copy import copy
 
 import os  
 import json
-import xlwt
 
 import sys
 defaultencoding = 'utf-8'
 if sys.getdefaultencoding() != defaultencoding:
-	reload(sys)
-	sys.setdefaultencoding(defaultencoding)
+    reload(sys)
+    sys.setdefaultencoding(defaultencoding)
+
+
+
 
 # key_sheet_name = '西餐厅'   #模板中对应的表格的名字
 # key_path_target = './1704/西餐厅.xls' # 数据源xls 的path
 
 
 # one ========= 拿到配置json 文件
-list_map = []
+
 def get_json_file(filename):
     f = open(filename, encoding='utf-8')  #设置以utf-8解码模式读取文件，encoding参数必须设置，否则默认以gbk模式读取文件，当文件中包含中文时，会报错
     setting = json.load(f)
     return setting
 
-    
+map_key =  get_json_file("key.json")
+list_map = map_key["content"]
+print("配置文件是：",list_map)
 
 
-
-def body_func(map_content):
-	key_sheet_name = map_content["key_sheet_name"]   #模板中对应的表格的名字
-	key_path_target = map_content["path"]   # 数据源xls 的path
-	print('模板中的sheet名字',key_sheet_name)
-	print('数据源路劲表格',key_path_target)
+# two ========= 根据配置 解析
 
 
-	col_target = map_content["col_target"]  # 小弄堂   3 要改成2
-	col_source = map_content["col_source"]  # 可能会改动的
-	key_path_target = map_content["path"] 
-	
-
-	# step 1  解析模板 ================================================  start  
+# 获取需要改变的 数据
+def get_list_target(key_sheet_name,col):
 	book = xlrd.open_workbook('./source/模版.xls',formatting_info=True)
 	sheets=book.sheets()
 	sheet_A37 = book.sheet_by_name(key_sheet_name)
 	rows = sheet_A37.nrows
 	cols = sheet_A37.ncols
 	list_cell = []
+
 	for row in range(rows):
-		cell = sheet_A37.cell_value(row,col_target)  
-		if isinstance(cell,float):
-			print('模板中的',key_sheet_name,row,type(cell))
-		if cell.strip() != '': # 需要判断shif
-			cell_target  = {'row': row, 'col': col_target, 'name': cell }  # 小弄堂   3 要改成2
-			list_cell.append(cell_target)
-	# print("模板中的数据",list_cell)	
+	    cell = sheet_A37.cell_value(row,col)  # 小弄堂   3 要改成2
+	    if "小   类" == cell:
+	    	continue
+	    if isinstance(cell,float):
+		    print('模板中的',key_sheet_name,row,type(cell))
+	    if cell.strip() != '': # 需要判断shif
+		    cell_target  = {'row': row, 'col': col, 'name': cell }  # 小弄堂   3 要改成2
+		    list_cell.append(cell_target)
+	return list_cell
 
 
-	# step 2  数据源去数据 ================================================  start  
+
+# 获取数据源的数据
+def get_list_source(key_path_target,col):
+	print("path==",key_path_target)
+	# col = 3  # 默认是 3  小弄堂 为2
 	book_source = xlrd.open_workbook(key_path_target,formatting_info=True)
 	sheet_B = book_source.sheet_by_index(0)
 	rows_sou = sheet_B.nrows
 	cols_sou = sheet_B.ncols
 	list_sou = []
+
+	# 检查 对应的列 
+	cell_first = sheet_B.cell_value(0,col)
+	if cell_first != "名称2":
+		print("出错啦、、、、当前cell的value 1",cell_first,key_path_target,"对应不上")
+		return
+
+	cell_first = sheet_B.cell_value(0,col+3)
+	print("出错啦、、、、当前cell的value 2",cell_first,key_path_target,"对应不上")
+	if cell_first != "销量":
+		return
+
+	cell_first = sheet_B.cell_value(0,col+5)
+	print("出错啦、、、、当前cell的value 3",cell_first,key_path_target,"对应不上")
+	if cell_first != "销售额":
+		return
+
 	for row in range(rows_sou):
-		cell = sheet_B.cell_value(row,col_source)
-		if cell.strip() != '': 
-			cell_target  = {'row': row, 'col': col_source, 'name': cell ,'val1':sheet_B.cell_value(row,col_source+3), 'val2':sheet_B.cell_value(row,col_source+5)} #销量(往后移动3位)  + 销售额(往后移动5位)
+		cell = sheet_B.cell_value(row,col)
+		print(cell,row,col)	
+		if cell.strip() != '':
+			cell_target  = {'row': row, 'col': col, 'name': cell ,'val1':sheet_B.cell_value(row,col+3), 'val2':sheet_B.cell_value(row,col+5)} #销量(往后移动3位)  + 销售额(往后移动5位)
 			list_sou.append(cell_target)
-	# print("数据源中的数据",list_sou)	
+	return list_sou
+	
 
 
-	# step 3  对比数据 筛选数据 ================================================  start  
-	list_all = []
-	for item_sou in list_sou:
-		for item_target in list_cell:
-			if item_sou['name'] == item_target['name']:
-				item_target['val1'] = item_sou['val1']
-				item_target['val2'] = item_sou['val2']
-				item_target["row_source"] = item_sou['row']
-				item_target["col_source"] = item_sou['col']
-				list_all.append(item_target)
-				break
-	# print("筛选对比之后的数据",list_all)
+# 合并数据 + 把(source)颜色变成 红色
 
-	# step 4  填写数据 保存表格 ================================================  start  
-	rb = xlrd.open_workbook('./source/模版.xls',formatting_info=True)
-	wb = copy(rb)
-	ws = wb.get_sheet(key_sheet_name)
-	for item in list_all:
-		ws.write(item['row'], item['col']+2, item['val1'])
-		ws.write(item['row'], item['col']+3, item['val2'])
-	wb.save('模版.xls')
+def merge_list(path,list_sou,list_cell):
+	list_cell = []
+	for row in range(rows):
+		cell = sheet_A37.cell_value(row,2)  # 小弄堂   3 要改成2
+		if isinstance(cell,float):
+			print('模板中的',key_sheet_name,row,type(cell))
+		if cell.strip() != '': 
+			cell_target  = {'row': row, 'col': 2, 'name': cell }  # 小弄堂   3 要改成2
+			list_cell.append(cell_target)
+	return list_cell
+
+    
+	    
 
 
-	# 重写 souce 的单元格
-
-	rb = xlrd.open_workbook(key_path_target,formatting_info=True)
-	wb = copy(rb)
-	ws = wb.get_sheet(0)
-
-    # 设置单元格颜色
-	pattern = xlwt.Pattern() # Create the Pattern
-	pattern.pattern = xlwt.Pattern.SOLID_PATTERN # May be: NO_PATTERN, SOLID_PATTERN, or 0x00 through 0x12
-	pattern.pattern_fore_colour = 5 # May be: 8 through 63. 0 = Black, 1 = White, 2 = Red, 3 = Green, 4 = Blue, 5 = Yellow, 6 = Magenta, 7 = Cyan, 16 = Maroon, 17 = Dark Green, 18 = Dark Blue, 19 = Dark Yellow , almost brown), 20 = Dark Magenta, 21 = Teal, 22 = Light Gray, 23 = Dark Gray, the list goes on...
-	style = xlwt.XFStyle() # Create the Pattern
-	style.pattern = pattern # Add Pattern to Style
-
-	for item in list_all:
-		# cell = ws.cell_value(item['row_source'],item['col_source'])
-		ws.write(item['row_source'], item['col_source']+3,item['val1'],style)
-		ws.write(item['row_source'], item['col_source']+5,item['val2'],style)
-    save_path = './source/model/'+key_sheet_name+'.xls'
-	wb.save(save_path)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-map_key =  get_json_file("key.json")
-list_map = map_key["content"]
-print("配置文件是：",list_map)
 for item in list_map:
-	body_func(item)
+	list_cell_item = get_list_target(item["key_sheet_name"],item["col_target"])
+	# print("最终数据",list_cell_item)
+	lists_s = get_list_source(item["path"],item["col_source"])
+	list_a = merge_list(item["path"],lists_s,list_cell_item)
+	print("最终数据==",list_a)
+
+
+
+
+
+
+
+
+
+
+
+# key_sheet_name = sys.argv[1]   #模板中对应的表格的名字
+# key_path_target = sys.argv[2] # 数据源xls 的path
+
+
+
+# print('第二个参数是',key_sheet_name)
+# print('第三个参数是',key_path_target)
 
 
 # # step 1  解析模板 ================================================
@@ -165,8 +166,8 @@ for item in list_map:
 # 		list_cell.append(cell_target)
 # 		# print(cell.encode('utf-8'))
 
-
-
+		
+	    
 # # print(list_cell)
 
 

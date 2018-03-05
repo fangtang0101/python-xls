@@ -1,0 +1,10 @@
+{
+  "content": [
+   {
+    "path":"./source/model/西餐厅.xls",
+    "key_sheet_name":"西餐厅",
+     "col_source":2,
+     "col_target":3
+   }
+  ]
+}
