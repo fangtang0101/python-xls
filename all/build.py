@@ -101,7 +101,7 @@ def body_func(map_content):
 
 	# step 4  填写数据 保存表格 ================================================  start  
 	print('step 4...............填写数据 保存表格',)
-	rb = xlrd.open_workbook('./source/模版.xls',formatting_info=True)
+	rb = xlrd.open_workbook(target_path_model,formatting_info=True)
 	wb = copy(rb)
 	ws = wb.get_sheet(key_sheet_name)
 	for item in list_all:
