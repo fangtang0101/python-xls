@@ -11,6 +11,8 @@ import os
 import json
 import xlwt
 
+import path
+
 import sys
 defaultencoding = 'utf-8'
 if sys.getdefaultencoding() != defaultencoding:
@@ -28,6 +30,10 @@ def get_json_file(filename):
     setting = json.load(f)
     return setting
 
+# 复制粘贴 文件
+# 1. copy model file to target file 
+
+
     
 
 
@@ -42,10 +48,11 @@ def body_func(map_content):
 	col_target = map_content["col_target"]  # 小弄堂   3 要改成2
 	col_source = map_content["col_source"]  # 可能会改动的
 	key_path_target = map_content["path"] 
+	target_path_model = "./target/模版.xls"
 	
-
 	# step 1  解析模板 ================================================  start  
-	book = xlrd.open_workbook('./source/模版.xls',formatting_info=True)
+	print('step 1...............开始解析',key_sheet_name,"模版中的数据")
+	book = xlrd.open_workbook(target_path_model,formatting_info=True)
 	sheets=book.sheets()
 	sheet_A37 = book.sheet_by_name(key_sheet_name)
 	rows = sheet_A37.nrows
@@ -55,13 +62,16 @@ def body_func(map_content):
 		cell = sheet_A37.cell_value(row,col_target)  
 		if isinstance(cell,float):
 			print('模板中的',key_sheet_name,row,type(cell))
-		if cell.strip() != '': # 需要判断shif
+		if cell.strip() != '':
 			cell_target  = {'row': row, 'col': col_target, 'name': cell }  # 小弄堂   3 要改成2
 			list_cell.append(cell_target)
+
+
 	# print("模板中的数据",list_cell)	
 
 
 	# step 2  数据源去数据 ================================================  start  
+	print('step 2...............开始获取数据源',key_path_target,"中的数据")
 	book_source = xlrd.open_workbook(key_path_target,formatting_info=True)
 	sheet_B = book_source.sheet_by_index(0)
 	rows_sou = sheet_B.nrows
@@ -76,6 +86,7 @@ def body_func(map_content):
 
 
 	# step 3  对比数据 筛选数据 ================================================  start  
+	print('step 3...............对比数据 筛选数据',"中的数据")
 	list_all = []
 	for item_sou in list_sou:
 		for item_target in list_cell:
@@ -89,13 +100,15 @@ def body_func(map_content):
 	# print("筛选对比之后的数据",list_all)
 
 	# step 4  填写数据 保存表格 ================================================  start  
+	print('step 4...............填写数据 保存表格',)
 	rb = xlrd.open_workbook('./source/模版.xls',formatting_info=True)
 	wb = copy(rb)
 	ws = wb.get_sheet(key_sheet_name)
 	for item in list_all:
 		ws.write(item['row'], item['col']+2, item['val1'])
 		ws.write(item['row'], item['col']+3, item['val2'])
-	wb.save('模版.xls')
+	wb.save('./target/模版.xls')
+	print('step 5...............',target_path_model,"保存成功")
 
 
 	# 重写 souce 的单元格
@@ -112,12 +125,16 @@ def body_func(map_content):
 	style.pattern = pattern # Add Pattern to Style
 
 	for item in list_all:
-		# cell = ws.cell_value(item['row_source'],item['col_source'])
+		ws.write(item['row_source'], item['col_source']+3,item['val1'],style)
 		ws.write(item['row_source'], item['col_source']+3,item['val1'],style)
 		ws.write(item['row_source'], item['col_source']+5,item['val2'],style)
-    save_path = './source/model/'+key_sheet_name+'.xls'
+	save_path = './target/'+key_sheet_name+'.xls'
+	# save_path = 'A2.xls'
+    
+    # save_path = './source/model/'+key_sheet_name+'.xls'
 	wb.save(save_path)
-
+	print('step 5...............',save_path,"保存成功")
+	print('all is finished...............',key_sheet_name)
 
 
 
@@ -133,10 +150,79 @@ def body_func(map_content):
 
 map_key =  get_json_file("key.json")
 list_map = map_key["content"]
+# print(path)
+path.search_file(path.path_source,path.path_target)
 print("配置文件是：",list_map)
 for item in list_map:
 	body_func(item)
 
+{
+  "content": [
+   {
+    "path":"./source/model/西餐厅.xls",
+    "key_sheet_name":"西餐厅",
+     "col_source":2,
+     "col_target":3
+   },
+   {
+    "path":"./source/model/茶餐厅.xls",
+    "key_sheet_name":"茶餐厅",
+     "col_source":2,
+     "col_target":3
+   },
+   {
+    "path":"./source/model/D5.xls",
+    "key_sheet_name":"D5",
+     "col_source":2,
+     "col_target":3
+   },
+   {
+    "path":"./source/model/D4.xls",
+    "key_sheet_name":"D4",
+     "col_source":2,
+     "col_target":3
+   },
+   # no  注意  col_target
+   {
+    "path":"./source/model/小弄堂.xls",
+    "key_sheet_name":"小弄堂",
+     "col_source":2,
+     "col_target":2
+   },
+   {
+    "path":"./source/model/A2.xls",
+    "key_sheet_name":"A2",
+     "col_source":2,
+     "col_target":3
+   },
+   {
+    "path":"./source/model/37#.xls",
+    "key_sheet_name":"37#",
+     "col_source":2,
+     "col_target":3
+   },
+   # no  注意  col_target
+   {
+    "path":"./source/model/A3.xls",
+    "key_sheet_name":"A3",
+     "col_source":2,
+     "col_target":2
+   },
+   {
+    "path":"./source/model/韩乡园.xls",
+    "key_sheet_name":"韩乡园",
+     "col_source":2,
+     "col_target":3
+   },
+   # no  注意  col_target
+   {
+    "path":"./source/model/麦海.xls",
+    "key_sheet_name":"麦海",
+     "col_source":2,
+     "col_target":1
+   }
+  ]
+}
 
 # # step 1  解析模板 ================================================
 
