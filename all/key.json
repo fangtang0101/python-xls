@@ -46,7 +46,7 @@
     "path":"./source/model/A3.xls",
     "key_sheet_name":"A3",
      "col_source":2,
-     "col_target":2
+     "col_target":3
    },
    {
     "path":"./source/model/韩乡园.xls",

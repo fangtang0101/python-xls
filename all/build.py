@@ -201,12 +201,12 @@ for item in list_map:
      "col_source":2,
      "col_target":3
    },
-   # no  注意  col_target
+   # no  注意  col_target  新模板 有 2  旧模板用3
    {
     "path":"./source/model/A3.xls",
     "key_sheet_name":"A3",
      "col_source":2,
-     "col_target":2
+     "col_target":3
    },
    {
     "path":"./source/model/韩乡园.xls",
